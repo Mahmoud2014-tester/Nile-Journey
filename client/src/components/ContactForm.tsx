@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Phone, Mail, MapPin, Clock } from "lucide-react";
-import { SiWhatsapp } from "react-icons/si";
+import { SiTelegram } from "react-icons/si";
 import { useToast } from "@/hooks/use-toast";
 
 const destinations = [
@@ -175,19 +175,19 @@ export function ContactForm() {
               </div>
             </Card>
 
-            <Card className="p-6 bg-green-600 text-white">
+            <Card className="p-6 bg-sky-500 text-white">
               <div className="flex items-center gap-3 mb-3">
-                <SiWhatsapp className="h-6 w-6" />
-                <h3 className="text-xl font-bold">Quick WhatsApp</h3>
+                <SiTelegram className="h-6 w-6" />
+                <h3 className="text-xl font-bold">Quick Telegram</h3>
               </div>
               <p className="mb-4 text-white/90">
-                Get instant responses! Chat with our travel experts on WhatsApp.
+                Get instant responses! Chat with our travel experts on Telegram.
               </p>
               <Button
                 variant="secondary"
-                className="w-full bg-white text-green-600 hover:bg-white/90"
-                onClick={() => window.open("https://wa.me/201234567890", "_blank")}
-                data-testid="button-whatsapp"
+                className="w-full bg-white text-sky-500 hover:bg-white/90"
+                onClick={() => window.open("https://t.me/safartravel", "_blank")}
+                data-testid="button-telegram"
               >
                 Start Chat
               </Button>
