@@ -14,6 +14,8 @@ import {
 import { Phone, Mail, MapPin, Clock } from "lucide-react";
 import { SiTelegram } from "react-icons/si";
 import { useToast } from "@/hooks/use-toast";
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 
 const destinations = [
   "Egypt",
@@ -24,23 +26,56 @@ const destinations = [
   "Other",
 ];
 
+interface InquiryData {
+  name: string;
+  email: string;
+  phone?: string;
+  destination?: string;
+  travelDates?: string;
+  message?: string;
+}
+
 export function ContactForm() {
   const { toast } = useToast();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedDestination, setSelectedDestination] = useState<string>("");
+
+  const mutation = useMutation({
+    mutationFn: async (data: InquiryData) => {
+      const response = await apiRequest("POST", "/api/inquiries", data);
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Request Submitted!",
+        description: "We'll get back to you within 24 hours.",
+      });
+      const form = document.getElementById("contact-form") as HTMLFormElement;
+      form?.reset();
+      setSelectedDestination("");
+    },
+    onError: () => {
+      toast({
+        title: "Something went wrong",
+        description: "Please try again later.",
+        variant: "destructive",
+      });
+    },
+  });
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsSubmitting(true);
+    const formData = new FormData(e.currentTarget);
     
-    // todo: remove mock functionality
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    
-    toast({
-      title: "Request Submitted!",
-      description: "We'll get back to you within 24 hours.",
-    });
-    setIsSubmitting(false);
-    (e.target as HTMLFormElement).reset();
+    const data: InquiryData = {
+      name: formData.get("name") as string,
+      email: formData.get("email") as string,
+      phone: (formData.get("phone") as string) || undefined,
+      destination: selectedDestination || undefined,
+      travelDates: (formData.get("dates") as string) || undefined,
+      message: (formData.get("message") as string) || undefined,
+    };
+
+    mutation.mutate(data);
   };
 
   return (
@@ -55,12 +90,13 @@ export function ContactForm() {
 
         <div className="grid lg:grid-cols-2 gap-8">
           <Card className="p-6 md:p-8">
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form id="contact-form" onSubmit={handleSubmit} className="space-y-6">
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Full Name</Label>
                   <Input
                     id="name"
+                    name="name"
                     placeholder="Your name"
                     required
                     data-testid="input-contact-name"
@@ -70,6 +106,7 @@ export function ContactForm() {
                   <Label htmlFor="email">Email</Label>
                   <Input
                     id="email"
+                    name="email"
                     type="email"
                     placeholder="your@email.com"
                     required
@@ -83,6 +120,7 @@ export function ContactForm() {
                   <Label htmlFor="phone">Phone</Label>
                   <Input
                     id="phone"
+                    name="phone"
                     type="tel"
                     placeholder="+20 xxx xxx xxxx"
                     data-testid="input-contact-phone"
@@ -90,7 +128,7 @@ export function ContactForm() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="destination">Destination Interest</Label>
-                  <Select>
+                  <Select value={selectedDestination} onValueChange={setSelectedDestination}>
                     <SelectTrigger data-testid="select-destination">
                       <SelectValue placeholder="Select destination" />
                     </SelectTrigger>
@@ -109,6 +147,7 @@ export function ContactForm() {
                 <Label htmlFor="dates">Preferred Travel Dates</Label>
                 <Input
                   id="dates"
+                  name="dates"
                   type="text"
                   placeholder="e.g., March 15-25, 2025"
                   data-testid="input-travel-dates"
@@ -119,6 +158,7 @@ export function ContactForm() {
                 <Label htmlFor="message">Message</Label>
                 <Textarea
                   id="message"
+                  name="message"
                   placeholder="Tell us about your dream trip..."
                   rows={4}
                   data-testid="input-message"
@@ -128,10 +168,10 @@ export function ContactForm() {
               <Button
                 type="submit"
                 className="w-full"
-                disabled={isSubmitting}
+                disabled={mutation.isPending}
                 data-testid="button-submit-contact"
               >
-                {isSubmitting ? "Sending..." : "Request Quote"}
+                {mutation.isPending ? "Sending..." : "Request Quote"}
               </Button>
             </form>
           </Card>

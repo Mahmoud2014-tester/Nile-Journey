@@ -1,11 +1,14 @@
 import { Header } from "@/components/Header";
 import { Hero } from "@/components/Hero";
-import { DestinationCard, DestinationProps } from "@/components/DestinationCard";
-import { PackageCard, PackageProps } from "@/components/PackageCard";
+import { DestinationCard } from "@/components/DestinationCard";
+import { PackageCard } from "@/components/PackageCard";
 import { StatsSection } from "@/components/StatsSection";
 import { TestimonialCard, TestimonialProps } from "@/components/TestimonialCard";
 import { ContactForm } from "@/components/ContactForm";
 import { Footer } from "@/components/Footer";
+import { useQuery } from "@tanstack/react-query";
+import { Skeleton } from "@/components/ui/skeleton";
+import type { Destination, Package } from "@shared/schema";
 
 import pyramidsImage from "@assets/generated_images/pyramids_of_giza_sunset.png";
 import dubaiImage from "@assets/generated_images/dubai_skyline_dusk_view.png";
@@ -14,119 +17,15 @@ import redSeaImage from "@assets/generated_images/red_sea_sharm_elsheikh.png";
 import marrakechImage from "@assets/generated_images/marrakech_medina_morocco.png";
 import luxorImage from "@assets/generated_images/luxor_temple_night.png";
 
-// todo: remove mock functionality - replace with API data
-const destinations: DestinationProps[] = [
-  {
-    id: "cairo",
-    name: "Cairo & Pyramids",
-    country: "Egypt",
-    image: pyramidsImage,
-    startingPrice: 599,
-    isPopular: true,
-  },
-  {
-    id: "dubai",
-    name: "Dubai",
-    country: "UAE",
-    image: dubaiImage,
-    startingPrice: 899,
-    isPopular: true,
-  },
-  {
-    id: "petra",
-    name: "Petra",
-    country: "Jordan",
-    image: petraImage,
-    startingPrice: 749,
-  },
-  {
-    id: "sharm",
-    name: "Sharm El Sheikh",
-    country: "Egypt",
-    image: redSeaImage,
-    startingPrice: 449,
-    isPopular: true,
-  },
-  {
-    id: "marrakech",
-    name: "Marrakech",
-    country: "Morocco",
-    image: marrakechImage,
-    startingPrice: 699,
-  },
-  {
-    id: "luxor",
-    name: "Luxor & Aswan",
-    country: "Egypt",
-    image: luxorImage,
-    startingPrice: 799,
-  },
-];
+const imageMap: Record<string, string> = {
+  pyramids: pyramidsImage,
+  dubai: dubaiImage,
+  petra: petraImage,
+  "red-sea": redSeaImage,
+  marrakech: marrakechImage,
+  luxor: luxorImage,
+};
 
-// todo: remove mock functionality - replace with API data
-const packages: PackageProps[] = [
-  {
-    id: "egypt-highlights",
-    title: "Egypt Highlights Tour",
-    image: luxorImage,
-    duration: "7 Days / 6 Nights",
-    groupSize: "Max 12 people",
-    price: 1299,
-    highlights: [
-      "Visit the Great Pyramids of Giza & Sphinx",
-      "Cruise the Nile from Luxor to Aswan",
-      "Explore the Valley of the Kings",
-      "Guided tours with certified Egyptologist",
-    ],
-    badge: "Best Seller",
-  },
-  {
-    id: "dubai-luxury",
-    title: "Dubai Luxury Experience",
-    image: dubaiImage,
-    duration: "5 Days / 4 Nights",
-    groupSize: "Private tour",
-    price: 1599,
-    highlights: [
-      "Burj Khalifa observation deck",
-      "Desert safari with BBQ dinner",
-      "Dubai Marina yacht cruise",
-      "5-star hotel accommodation",
-    ],
-    badge: "Premium",
-  },
-  {
-    id: "jordan-adventure",
-    title: "Jordan Adventure",
-    image: petraImage,
-    duration: "6 Days / 5 Nights",
-    groupSize: "Max 10 people",
-    price: 1199,
-    highlights: [
-      "Full day exploring Petra",
-      "Wadi Rum desert experience",
-      "Dead Sea float experience",
-      "Jerash Roman ruins visit",
-    ],
-  },
-  {
-    id: "morocco-imperial",
-    title: "Imperial Morocco Tour",
-    image: marrakechImage,
-    duration: "8 Days / 7 Nights",
-    groupSize: "Max 14 people",
-    price: 1449,
-    highlights: [
-      "Marrakech medina exploration",
-      "Sahara Desert camel trek",
-      "Fes cultural immersion",
-      "Atlas Mountains day trip",
-    ],
-    badge: "New",
-  },
-];
-
-// todo: remove mock functionality - replace with API data
 const testimonials: TestimonialProps[] = [
   {
     id: "1",
@@ -154,7 +53,35 @@ const testimonials: TestimonialProps[] = [
   },
 ];
 
+function DestinationsSkeleton() {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {[1, 2, 3, 4, 5, 6].map((i) => (
+        <Skeleton key={i} className="h-64 rounded-lg" />
+      ))}
+    </div>
+  );
+}
+
+function PackagesSkeleton() {
+  return (
+    <div className="grid lg:grid-cols-2 gap-6">
+      {[1, 2, 3, 4].map((i) => (
+        <Skeleton key={i} className="h-80 rounded-lg" />
+      ))}
+    </div>
+  );
+}
+
 export default function Home() {
+  const { data: destinations = [], isLoading: destinationsLoading } = useQuery<Destination[]>({
+    queryKey: ["/api/destinations"],
+  });
+
+  const { data: packages = [], isLoading: packagesLoading } = useQuery<Package[]>({
+    queryKey: ["/api/packages"],
+  });
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -172,11 +99,23 @@ export default function Home() {
                 Explore the most sought-after destinations in the Arab world, from ancient wonders to modern marvels.
               </p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {destinations.map((destination) => (
-                <DestinationCard key={destination.id} {...destination} />
-              ))}
-            </div>
+            {destinationsLoading ? (
+              <DestinationsSkeleton />
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {destinations.map((destination) => (
+                  <DestinationCard
+                    key={destination.id}
+                    id={destination.id}
+                    name={destination.name}
+                    country={destination.country}
+                    image={imageMap[destination.image] || destination.image}
+                    startingPrice={destination.startingPrice}
+                    isPopular={destination.isPopular ?? false}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         </section>
 
@@ -192,11 +131,25 @@ export default function Home() {
                 Curated travel experiences with everything included. Just pack your bags and we'll handle the rest.
               </p>
             </div>
-            <div className="grid lg:grid-cols-2 gap-6">
-              {packages.map((pkg) => (
-                <PackageCard key={pkg.id} {...pkg} />
-              ))}
-            </div>
+            {packagesLoading ? (
+              <PackagesSkeleton />
+            ) : (
+              <div className="grid lg:grid-cols-2 gap-6">
+                {packages.map((pkg) => (
+                  <PackageCard
+                    key={pkg.id}
+                    id={pkg.id}
+                    title={pkg.title}
+                    image={imageMap[pkg.image] || pkg.image}
+                    duration={pkg.duration}
+                    groupSize={pkg.groupSize}
+                    price={pkg.price}
+                    highlights={pkg.highlights}
+                    badge={pkg.badge ?? undefined}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         </section>
 
