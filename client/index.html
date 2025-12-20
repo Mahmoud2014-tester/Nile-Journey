@@ -9,9 +9,41 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+      <!-- 🔹 n8n Chat CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css"
+      rel="stylesheet"
+    />
+
+    <!-- 🔹 n8n Chat Custom Theme -->
+    <style>
+     :root {
+       --chat--color--primary: #0d6efd;
+       --chat--color--secondary: #198754;
+       --chat--message--user--background: #198754;
+       --chat--message--user--color: #ffffff;
+       --chat--toggle--size: 56px;
+       --chat--window--width: 380px;
+       --chat--window--height: 560px;
+     }
+    </style>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+        <!-- 🔹 n8n Chat Script -->
+    <script type="module">
+      import { createChat } from 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js';
+
+      createChat({
+        webhookUrl: 'https://saber1952.app.n8n.cloud/webhook/854c829c-2ce6-426f-89e2-ed44d33182f3/chat',
+        initialMessages: [
+           'Safar Assistant at your service ✈️',
+          'How can we help you today?'
+        ],
+        defaultLanguage: 'en',
+        showWelcomeScreen: false
+      });
+    </script>
   </body>
 </html>
